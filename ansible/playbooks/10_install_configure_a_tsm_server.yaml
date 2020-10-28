@@ -3,7 +3,7 @@
   hosts: tsm
   gather_facts: true
   vars_files: 
-    - "./vars/central_vars.yaml"
+    - "../vars/central_vars.yaml"
   tasks:
     - name: "# --- 01 - Erstelle Arbeitsverzeichnisse"
       file: 
