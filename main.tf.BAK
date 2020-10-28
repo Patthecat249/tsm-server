@@ -1,0 +1,210 @@
+provider "vsphere" {
+  vsphere_server = var.vsphere_hostname
+  user = var.vsphere_username
+  password = var.vsphere_password
+  allow_unverified_ssl = true
+}
+
+# RHEL-Boot-EFI 1GiB
+resource "vsphere_virtual_disk" "rhel-bootefi" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "rhel-bootefi.vmdk"
+  virtual_disk_size = 1
+  virtual_disk_type = "thin"
+}
+# RHEL-Boot 1GiB
+resource "vsphere_virtual_disk" "rhel-boot" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "rhel-boot.vmdk"
+  virtual_disk_size = 1
+  virtual_disk_type = "thin"
+}
+# RHEL-SWAP 4GiB
+resource "vsphere_virtual_disk" "rhel-swap" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "rhel-swap.vmdk"
+  virtual_disk_size = 4
+  virtual_disk_type = "thin"
+}
+# RHEL-Root 100GiB
+resource "vsphere_virtual_disk" "rhel-root" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "rhel-swap.vmdk"
+  virtual_disk_size = 100
+  virtual_disk_type = "thin"
+}
+# TSM-Database-Volumes
+resource "vsphere_virtual_disk" "tsmdatabase01" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsmdatabase01.vmdk"
+  virtual_disk_size = 50
+  virtual_disk_type = "thin"
+}
+resource "vsphere_virtual_disk" "tsmdatabase02" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsmdatabase02.vmdk"
+  virtual_disk_size = 50
+  virtual_disk_type = "thin"
+}
+resource "vsphere_virtual_disk" "tsmdatabase03" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsmdatabase03.vmdk"
+  virtual_disk_size = 50
+  virtual_disk_type = "thin"
+}
+resource "vsphere_virtual_disk" "tsmdatabase04" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsmdatabase04.vmdk"
+  virtual_disk_size = 50
+  virtual_disk_type = "thin"
+}
+
+# TSM-Actlog-Volumes
+resource "vsphere_virtual_disk" "tsmactlog01" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsmactlog01.vmdk"
+  virtual_disk_size = 48
+  virtual_disk_type = "thin"
+}
+# TSM-Archlog-Volumes
+resource "vsphere_virtual_disk" "tsmarchlog01" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsmarchlog01.vmdk"
+  virtual_disk_size = 128
+  virtual_disk_type = "thin"
+}
+
+# --- DISKPOOL-Volumes --- #
+# TSM - tsmvg - vol01
+resource "vsphere_virtual_disk" "tsmvol01" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsm01.vmdk"
+  virtual_disk_size = 500
+  virtual_disk_type = "thin"
+}
+# TSM - tsmvg - vol02
+resource "vsphere_virtual_disk" "tsmvol02" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsm02.vmdk"
+  virtual_disk_size = 500
+  virtual_disk_type = "thin"
+}
+# TSM - tsmvg - vol03
+resource "vsphere_virtual_disk" "tsmvol03" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsm03.vmdk"
+  virtual_disk_size = 500
+  virtual_disk_type = "thin"
+}
+# TSM - tsmvg - vol04
+resource "vsphere_virtual_disk" "tsmvol04" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsm04.vmdk"
+  virtual_disk_size = 500
+  virtual_disk_type = "thin"
+}
+# TSM - tsmvg - vol05
+resource "vsphere_virtual_disk" "tsmvol05" {
+  virtual_disk_disk_store = var.virtual_disk_disk_store
+  virtual_disk_dir = var.datastore_vm_dir
+  virtual_disk_name = "tsm05.vmdk"
+  virtual_disk_size = 500
+  virtual_disk_type = "thin"
+}
+
+# Create VM
+resource "vsphere_guest" "tsm-server" {
+  guest_name = "tsm-server"
+  disk_store = var.virtual_disk_disk_store
+  firmware = "EFI"
+  efi_secure_boot_enabled = "true"
+  scsi_controller_count = 2
+  boot_disk_type = "thin"
+  boot_disk_size = 1
+  guest_startup_timeout = "60"
+  guestos = "rhel7-64"
+  notes = "TSM-Server per terraform konfiguriert"
+  virthwver = 13
+  memsize = "4096"
+  numvcpus = "2"
+  network_interfaces {
+    virtual_network = "dpg-home-prod"
+    nic_type = "vmxnet3"
+  }
+  power = "off"
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.rhel-bootefi.id
+    slot = "0:2"
+  } 
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.rhel-boot.id
+    slot = "0:3"
+  } 
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.rhel-swap.id
+    slot = "0:4"
+  } 
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.rhel-root.id
+    slot = "0:5"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmvol01.id
+    slot = "0:6"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmvol02.id
+    slot = "0:8"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmvol03.id
+    slot = "0:9"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmvol04.id
+    slot = "0:10"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmvol05.id
+    slot = "0:11"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmdatabase01.id
+    slot = "0:12"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmdatabase02.id
+    slot = "0:13"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmdatabase03.id
+    slot = "0:14"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmdatabase04.id
+    slot = "0:15"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmactlog01.id
+    slot = "1:0"
+  }
+  virtual_disks {
+    virtual_disk_id = vsphere_virtual_disk.tsmarchlog01.id
+    slot = "1:1"
+  } 
+}
+
