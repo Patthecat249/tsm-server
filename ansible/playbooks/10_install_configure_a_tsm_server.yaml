@@ -5,7 +5,18 @@
   vars_files: 
     - "../vars/central_vars.yaml"
     - "../../credentials"
+  
   tasks:
+    - name: "# --- 01 - Register tsm-server with RHSM"
+      redhat_subscription:
+        state: present
+        username: "{{ redhat_user }}"
+        password: "{{ redhat_pass }}"
+        #environment: Library
+        autosubscribe: yes
+      tags:
+        - rhsm
+
     - name: "# --- 00 - Install prerequisites and software nessesary programs"
       yum: 
         name: "{{ item }}"
