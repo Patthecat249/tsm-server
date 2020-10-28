@@ -1,61 +1,53 @@
 # Dies ist das erste Play
-- name: Installiere einen Server
-  # Hier kann man die Hostnamen oder Groupnamen aus dem Inventory-File ansprechen, auf die das Playbook angewendet werden soll
-  hosts: localhost
-  # Sollen Daten über den remote-Host gesammelt werden und die facts-Variablen mit Werten gefüllt werden
+- name: "Installiere einen Server"
+  hosts: tsm
   gather_facts: true
-  # Hier beginnt die Variablen Deklaration
   vars:
-    # Variable "user1" mit dem Wert "Patrick"
     user1: Patrick
-    # Variable "passwd" mit dem Wert "Test"
     passwd: Test
-  # Hier beginnen Tasks für das erste Play
   tasks:
-    # Dies ist der erste Task
-    - name: Installiere einen WebServer
-      # Dies ist das Module YUM. 
-      yum:
-        # Dies ist der Package-Name inkl. Version
-        # State=present bedeutet. Muss vorhanden sein, wenn nicht, wird es installiert.
-        name: httpd
-        # Als Status können die folgenden Werte verwendet werden
-        # 'present' or 'installed', 'latest', or 'absent' or 'removed'
-        state: present
-    # Führe das Debug-Modul aus für den ersten Task aus
-    - debug:
-        # Hier wird eine Message ausgegeben und auf die Variable "user1" zugegriffen.
-        msg: Dieses Playbook wurde von {{ user1 }} geschrieben.
+    - name: "# --- 01 - Erstelle Arbeitsverzeichnisse"
+      file: 
+        path: "{{ item }}"
+        #mode: ""
+        #owner: ""
+        #group: ""
+        state: directory
+        recurse: true
+      with_items:
+        - "{{ mount_path_tsm }}"
+        - "{{ mount_path_cdrom }}"
+        - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
 
-    # Dies ist der zweite Task
-    - name: Installiere Python
-      # Dies ist das Module YUM. 
-      yum:
-        # Dies ist der Package-Name inkl. Version
-        # Es wird die Software "zziplib" installiert
-        name: zziplib.i686
-        # Als Status können die folgenden Werte verwendet werden
-        # 'present' or 'installed', 'latest', or 'absent' or 'removed'
-        state: absent
-    # Führe das Debug-Modul aus für den zweiten Task aus
-    - debug:
-        # Hier wird eine Message ausgegeben und auf die Variable "passwd" zugegriffen.
-        msg: Dieses Playbook wurde von {{ passwd }} geschrieben.
+# Mounte NFS-Server-Verzeichnis zum Kopieren der Kickstart-Datei
+    - name: "# --- 02 - Mounting NFS-Share"
+      mount:
+        fstype: nfs
+        opts: "nfsvers=3,nolock"
+        dump: "0"
+        passno: "0"
+        state: mounted
+        src: "{{ nfs_server_name }}:{{ nfs_path }}"
+        path: "{{ mount_path_tsm }}"
 
-# Das ist das zweite Play in diesem Playbook
-- name: Installiere einen zweiten Server
-  # Installiere auf allen Hosts im Inventory-File
-  hosts: all
-  # Hier beginnen Tasks für das zweite Play
-  tasks:
-    # Dies ist der erste Task vom zweiten Play
-    - name: Installiere NGINX
-      # Dies ist das Module YUM.
-      yum:
-        # Dies ist der Package-Name inkl. Version
-        name: nginx.x86_64
-        # Als Status können die folgenden Werte verwendet werden
-        # 'present' or 'installed', 'latest', or 'absent' or 'removed'
-        state: installed
-  
+# Copy BIN-File
+    - name: "# --- 03 - Copy BIN-File from NAS to {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
+      copy:
+        src: "{{ mount_path_tsm }}{{ nfs_path_bin_file }}"
+        dest: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
+        remote_src: yes
+
+# Extract the BIN-File
+    - name: "# --- 04 - Extract BIN-File"
+      shell: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
+
+# Erstelle den TSM-User
+    - name: "# --- 05 - Erstelle den TSM-User {{ tsm_username }}"
+      user:
+        name: "{{ tsm_username }}"
+        comment: "Dies ist der TSM-Installationsbenutzer"
+        uid: 2222
+        group: 1111
+    
+
   

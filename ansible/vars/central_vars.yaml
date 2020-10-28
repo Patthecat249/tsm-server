@@ -1,0 +1,29 @@
+# TSM-Environment Variables
+tsm_server_name: "tsm-server"
+tsm_instance_name: "tsminst1"
+tsm_username: "tsminst1user"
+
+#Working Directories
+dir_work: "/opt/sva/"
+dir_tsm: "tsm/"
+dir_tsm_extracted_install: "install/"
+
+# Mount-Folders
+mount_path_tsm: "/mnt/tsm/"
+mount_path_cdrom: "/mnt/cdrom/"
+
+# NFS-Server-/Path-Konfiguration
+nfs_server_name: "nas.home.local"
+nfs_server_ip: "10.0.249.150"
+nfs_path: "/volume1/nfs-iso/"
+nfs_path_bin_file: "spectrumprotect/SP_8.1.10_LIN86_SERSTG_AGT_ML.bin"
+bin_file_name: "SP_8.1.10_LIN86_SERSTG_AGT_ML.bin"
+
+
+dir_tsm_root_folder: "/tsm/"
+dir_tsm_actlog: "actlog/"
+dir_tsm_archlog: "archlog/"
+
+dir_default_installation_tsm: "/opt/tivoli/tsm/server/bin/"
+dir_default_installation_db2: "/opt/tivoli/tsm/db2/"
+
