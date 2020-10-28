@@ -5,6 +5,14 @@
   vars_files: 
     - "../vars/central_vars.yaml"
   tasks:
+    - name: "# --- 00 - Install prerequisites and software nessesary programs"
+      yum: 
+        name: "{{ item }}"
+        state: "present"
+      with_items:
+        - nfs-server
+
+
     - name: "# --- 01 - Erstelle Arbeitsverzeichnisse"
       file: 
         path: "{{ item }}"
