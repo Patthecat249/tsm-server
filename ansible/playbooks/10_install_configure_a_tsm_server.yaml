@@ -2,9 +2,8 @@
 - name: "Installiere einen Server"
   hosts: tsm
   gather_facts: true
-  vars:
-    user1: Patrick
-    passwd: Test
+  vars_files: 
+    - "./vars/central_vars.yaml"
   tasks:
     - name: "# --- 01 - Erstelle Arbeitsverzeichnisse"
       file: 
