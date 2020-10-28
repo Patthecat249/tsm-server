@@ -4,6 +4,7 @@
   gather_facts: true
   vars_files: 
     - "../vars/central_vars.yaml"
+    - "../../credentials"
   tasks:
     - name: "# --- 00 - Install prerequisites and software nessesary programs"
       yum: 
