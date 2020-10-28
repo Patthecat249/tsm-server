@@ -1,7 +1,2 @@
-[webservers]
-spielwiese01
-
-[datacenter]
-spielwiese01
-pxe-master
-terraform-master
+[tsm]
+tsm-server.home.local
