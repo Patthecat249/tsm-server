@@ -52,6 +52,7 @@
       copy:
         src: "{{ mount_path_tsm }}{{ nfs_path_bin_file }}"
         dest: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
+        mode: "0755"
         remote_src: yes
 
 # Extract the BIN-File
