@@ -59,7 +59,7 @@
 
 # Create Group
     - name: "# --- 07 - Create group 1111"
-    - group:
+      group:
         name: "1111"
         state: present
 
