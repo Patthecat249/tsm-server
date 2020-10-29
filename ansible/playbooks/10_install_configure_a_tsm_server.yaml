@@ -60,7 +60,8 @@
 # Create Group
     - name: "# --- 07 - Create group 1111"
       group:
-        name: "1111"
+        name: "tsmsrvs"
+        gid: "1111"
         state: present
 
 # Erstelle den TSM-User
@@ -68,8 +69,8 @@
       user:
         name: "{{ tsm_username }}"
         comment: "Dies ist der TSM-Installationsbenutzer"
-        uid: 2222
-        group: 1111
+        uid: "2222"
+        group: "1111"
     
 
   
