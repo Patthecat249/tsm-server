@@ -55,10 +55,16 @@
 
 # Extract the BIN-File
     - name: "# --- 06 - Extract BIN-File"
-      shell: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
+      shell: "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }} && {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
+
+# Create Group
+    - name: "# --- 07 - Create group 1111"
+    - group:
+        name: "1111"
+        state: present
 
 # Erstelle den TSM-User
-    - name: "# --- 07 - Erstelle den TSM-User {{ tsm_username }}"
+    - name: "# --- 08 - Erstelle den TSM-User {{ tsm_username }}"
       user:
         name: "{{ tsm_username }}"
         comment: "Dies ist der TSM-Installationsbenutzer"
