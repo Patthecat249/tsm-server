@@ -14,18 +14,16 @@
         password: "{{ redhat_pass }}"
         #environment: Library
         autosubscribe: yes
-      tags:
-        - rhsm
 
-    - name: "# --- 00 - Install prerequisites and software nessesary programs"
+    - name: "# --- 02 - Install prerequisites and software necessary programs"
       yum: 
         name: "{{ item }}"
         state: "present"
       with_items:
-        - nfs-server
+        - "nfs-utils.x86_64"
 
 
-    - name: "# --- 01 - Erstelle Arbeitsverzeichnisse"
+    - name: "# --- 03 - Erstelle Arbeitsverzeichnisse"
       file: 
         path: "{{ item }}"
         #mode: ""
@@ -39,7 +37,7 @@
         - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
 
 # Mounte NFS-Server-Verzeichnis zum Kopieren der Kickstart-Datei
-    - name: "# --- 02 - Mounting NFS-Share"
+    - name: "# --- 04 - Mounting NFS-Share"
       mount:
         fstype: nfs
         opts: "nfsvers=3,nolock"
@@ -50,18 +48,18 @@
         path: "{{ mount_path_tsm }}"
 
 # Copy BIN-File
-    - name: "# --- 03 - Copy BIN-File from NAS to {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
+    - name: "# --- 05 - Copy BIN-File from NAS to {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
       copy:
         src: "{{ mount_path_tsm }}{{ nfs_path_bin_file }}"
         dest: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
         remote_src: yes
 
 # Extract the BIN-File
-    - name: "# --- 04 - Extract BIN-File"
+    - name: "# --- 06 - Extract BIN-File"
       shell: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
 
 # Erstelle den TSM-User
-    - name: "# --- 05 - Erstelle den TSM-User {{ tsm_username }}"
+    - name: "# --- 07 - Erstelle den TSM-User {{ tsm_username }}"
       user:
         name: "{{ tsm_username }}"
         comment: "Dies ist der TSM-Installationsbenutzer"
