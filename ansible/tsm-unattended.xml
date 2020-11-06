@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<agent-input>
+  <variables>
+    <variable name='sharedLocation' value='/opt/IBM/IBMIMShared'/>
+  </variables>
+  <server>
+    <repository location='repository'/>
+    <repository location='im64'/>
+  </server>
+  <profile id='IBM Installation Manager' installLocation='/opt/IBM/InstallationManager/eclipse' kind='self'>
+    <data key='cic.selector.arch' value='x86_64'/>
+    <data key='cic.selector.nl' value='de,no,fi,ru,hr,pt_BR,fr,hu,zh_TW,zh_HK,sk,sl,sv,ko,el,en,it,iw,zh,es,cs,ar,th,ja,pl,da,nl,tr'/>
+  </profile>
+  <install>
+    <!-- IBM® Installation Manager 1.9.1 -->
+    <offering profile='IBM Installation Manager' id='com.ibm.cic.agent' version='1.9.1000.20191001_1228' features='agent_core,agent_jre,agent_web'/>
+  </install>
+  <profile id='IBM Spectrum Protect' installLocation='/opt/tivoli/tsm'>
+    <data key='cic.selector.arch' value='x86_64'/>
+    <data key='user.entitlement,com.tivoli.dsm.server' value='2'/>
+    <data key='user.license,com.tivoli.dsm.server' value='tsmee'/>
+    <data key='user.license_option,com.tivoli.dsm.server' value='a'/>
+    <data key='user.license,com.tivoli.dsm.stagent' value='san'/>
+    <data key='user.license_option,com.tivoli.dsm.stagent' value='a'/>
+  </profile>
+  <install>
+    <!-- IBM Spectrum Protect server 8.1.10.20200521_1453 -->
+    <offering profile='IBM Spectrum Protect' id='com.tivoli.dsm.server' version='8.1.10.20200521_1453' features='com.tivoli.dsm.server.main,com.tivoli.dsm.gskit,com.tivoli.dsm.clientapi,com.ibm.java.jre'/>
+    <!-- IBM Spectrum Protect languages 8.1.10.20200521_1450 -->
+    <offering profile='IBM Spectrum Protect' id='com.tivoli.dsm.lang' version='8.1.10.20200521_1450' features='com.tivoli.dsm.lang.english'/>
+    <!-- IBM Spectrum Protect license 8.1.10.20200521_1450 -->
+    <offering profile='IBM Spectrum Protect' id='com.tivoli.dsm.license' version='8.1.10.20200521_1450' features='com.tivoli.dsm.license.main'/>
+    <!-- IBM Spectrum Protect storage agent 8.1.10.20200521_1450 -->
+    <offering profile='IBM Spectrum Protect' id='com.tivoli.dsm.stagent' version='8.1.10.20200521_1450' features='com.tivoli.dsm.stagent.main,com.tivoli.dsm.gskit'/>
+    <!-- IBM Spectrum Protect device driver  8.1.10.20200521_1451 -->
+    <offering profile='IBM Spectrum Protect' id='com.tivoli.dsm.devices' version='8.1.10.20200521_1451' features='com.tivoli.dsm.devices.main'/>
+  </install>
+  <preference name='com.ibm.cic.common.core.preferences.eclipseCache' value='${sharedLocation}'/>
+</agent-input>
