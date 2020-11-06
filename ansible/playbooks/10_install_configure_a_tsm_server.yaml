@@ -7,6 +7,11 @@
     - "../../credentials"
   
   tasks:
+    - name: "# --- 00 - Disable SELinux"
+      # Disable SELinux
+      selinux:
+        state: disabled
+    
     - name: "# --- 01 - Register tsm-server with RHSM"
       redhat_subscription:
         state: present
@@ -20,6 +25,10 @@
         name: "nfs-utils.x86_64"
         state: "present"
 
+    - name: "# --- 02a - Install KSH"
+      yum: 
+        name: "ksh.x86_64"
+        state: "present"
 
     - name: "# --- 03 - Erstelle Arbeitsverzeichnisse"
       file: 
@@ -56,6 +65,8 @@
 # Extract the BIN-File
     - name: "# --- 06 - Extract BIN-File"
       shell: "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }} && {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
+
+# Disable SELINUX
 
 # Create Group
     - name: "# --- 07 - Create group 1111"
