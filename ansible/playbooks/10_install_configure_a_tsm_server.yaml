@@ -1,36 +1,35 @@
 # Dies ist das erste Play
-- name: "Installiere einen Server"
+- name: "Install an IBM-Spectrum-Protect-Server"
   hosts: tsm
-  gather_facts: true
+  gather_facts: false
   vars_files: 
     - "../vars/central_vars.yaml"
     - "../../credentials"
   
   tasks:
-    - name: "# --- 00 - Disable SELinux"
+    - name: "# --- 01 - Disable SELinux"
       # Disable SELinux
       selinux:
         state: disabled
     
-    - name: "# --- 01 - Register tsm-server with RHSM"
+    - name: "# --- 02 - Register tsm-server with RHSM"
       redhat_subscription:
         state: present
         username: "{{ redhat_user }}"
         password: "{{ redhat_pass }}"
-        #environment: Library
         autosubscribe: yes
 
-    - name: "# --- 02 - Install prerequisites and software necessary programs"
+    - name: "# --- 03 - Install prerequisites and software necessary programs"
       yum: 
         name: "nfs-utils.x86_64"
         state: "present"
 
-    - name: "# --- 02a - Install KSH"
+    - name: "# --- 04 - Install KSH"
       yum: 
         name: "ksh.x86_64"
         state: "present"
 
-    - name: "# --- 03 - Erstelle Arbeitsverzeichnisse"
+    - name: "# --- 05 - Erstelle Arbeitsverzeichnisse"
       file: 
         path: "{{ item }}"
         #mode: ""
@@ -41,10 +40,10 @@
       with_items:
         - "{{ mount_path_tsm }}"
         - "{{ mount_path_cdrom }}"
-        - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
+        - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }}"
 
 # Mounte NFS-Server-Verzeichnis zum Kopieren der Kickstart-Datei
-    - name: "# --- 04 - Mounting NFS-Share"
+    - name: "# --- 06 - Mounting NFS-Share"
       mount:
         fstype: nfs
         opts: "nfsvers=3,nolock"
@@ -55,33 +54,205 @@
         path: "{{ mount_path_tsm }}"
 
 # Copy BIN-File
-    - name: "# --- 05 - Copy BIN-File from NAS to {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
+    - name: "# --- 07 - Copy BIN-File from NAS to {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
       copy:
         src: "{{ mount_path_tsm }}{{ nfs_path_bin_file }}"
         dest: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
         mode: "0755"
         remote_src: yes
 
+
+# Unarchive tsm-client.tar
+    - name: "# --- 08 - Unarchive {{bin_file_tsm_client}} to {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_client }}"
+      unarchive:
+        src: "{{ mount_path_tsm }}{{ nfs_path_tsm_client_file }}"
+        dest: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }}"
+        remote_src: yes
+      tags:
+        - untar
+
 # Extract the BIN-File
-    - name: "# --- 06 - Extract BIN-File"
+    - name: "# --- 09 - Extract BIN-File"
       shell: "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }} && {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ bin_file_name }}"
 
-# Disable SELINUX
+# Copy tsm-unattended-install-file
+    - name: "# --- 10 - Copy {{ file_tsm_unattended_xml }} to {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}"
+      copy:
+        src: "../{{ file_tsm_unattended_xml }}"
+        dest: "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ file_tsm_unattended_xml }}"
 
+# Execute unattended TSM installation
+    - name: "# --- 11 - Execute unattended tsm-server-installation - this may need 40 minutes"
+      shell: "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }} && ./install.sh -s -input {{ file_tsm_unattended_xml }} -acceptLicense"
+
+# Update the kernel parameter values
+
+
+# Create the directories and user ID for the server instance
 # Create Group
-    - name: "# --- 07 - Create group 1111"
+    - name: "# --- 12 - Create group 1111"
       group:
         name: "tsmsrvs"
         gid: "1111"
         state: present
 
 # Erstelle den TSM-User
-    - name: "# --- 08 - Erstelle den TSM-User {{ tsm_username }}"
+    - name: "# --- 13 - Erstelle den TSM-User {{ tsm_instance_and_username }}"
       user:
-        name: "{{ tsm_username }}"
+        name: "{{ tsm_instance_and_username }}"
         comment: "Dies ist der TSM-Installationsbenutzer"
-        uid: "2222"
-        group: "1111"
+        uid: "{{tsm_user_uid}}"
+        group: "{{tsm_user_groupid}}"
     
+# Configure a server instance
+## Manually configure the new instance
+### Set up your directories and create the IBM Spectrum Protect instance
+    - name: "# --- 14 - Erstelle TSM-Verzeichnisse"
+      file: 
+        path: "{{ item }}"
+        #mode: ""
+        owner: "{{tsm_instance_and_username}}"
+        group: "{{tsm_user_groupid}}"
+        state: directory
+        recurse: true
+      with_items:
+        - "{{ dir_tsm_root_folder }}"
+        - "{{ dir_tsm_actlog }}"
+        - "{{ dir_tsm_archlog }}"
+        - "{{ dir_tsm_instance }}"
+        - "{{ dir_tsm_db1 }}"
+        - "{{ dir_tsm_db2 }}"
+        - "{{ dir_tsm_db3 }}"
+        - "{{ dir_tsm_db4 }}"
 
-  
+
+### Create a new server options file by copying
+    - name: "# --- 15 - Create dsmserv.opt from jinja-template"
+      template: 
+        owner: "{{ tsm_instance_and_username }}"
+        group: "{{ tsm_user_groupid }}"
+        src: "{{ file_dsmserv_opt_jinja }}"
+        dest: "/home/{{ tsm_instance_and_username }}/dsmserv.opt"
+        force: yes
+
+# Log in using the root user ID and create an IBM Spectrum Protect instance
+    - name: "# --- 16 - Create an empty db2-instance"
+      shell: "cd /opt/tivoli/tsm/db2/instance && ./db2icrt -a server -u {{tsm_instance_and_username}} {{tsm_instance_and_username}}"
+
+
+# Change the default directory for the database to be the same as the instance directory for the server
+    - name: "# --- 17 - Change the default directory for the database"
+      become: yes
+      become_user: "{{ tsm_instance_and_username }}"
+      become_method: su
+      shell: "export DB2INSTANCE={{ tsm_instance_and_username }} && cd {{ dir_default_installation_db2 }}bin/ && ./db2 update dbm cfg using dftdbpath /home/{{ tsm_instance_and_username }}"
+
+    - name: "# --- 18 - Modify the library path"
+      become: yes
+      become_user: "{{ tsm_instance_and_username }}"
+      become_method: su
+      lineinfile:
+        path: "/home/{{tsm_instance_and_username}}/sqllib/userprofile"
+        line: "export LD_LIBRARY_PATH={{dir_default_installation_tsm}}dbbkapi:/usr/local/ibm/gsk8_64/lib64:/opt/ibm/lib:/opt/ibm/lib64:$LD_LIBRARY_PATH"
+
+# Set db2set -i server_instance_name DB2NOEXITLIST ON
+    - name: "# --- 19 - Change the default directory for the database"
+      become: yes
+      become_user: "{{ tsm_instance_and_username }}"
+      become_method: su
+      shell: "export DB2INSTANCE={{ tsm_instance_and_username }} && cd /home/{{ tsm_instance_and_username }}/sqllib/adm/ && ./db2set -i {{ tsm_instance_and_username }} DB2NOEXITLIST=ON"
+
+### Issue the DSMSERV FORMAT command to format the database
+    - name: "# --- 20 - dsmserv Format the database"
+      become: yes
+      become_user: "{{ tsm_instance_and_username }}"
+      become_method: su
+      shell: "source /home/{{tsm_instance_and_username}}/sqllib/db2profile && cd /home/{{ tsm_instance_and_username }} && dsmserv format dbdir={{dir_tsm_db1}} activelogsize=32768 activelogdirectory={{dir_tsm_actlog}} archlogdirectory={{dir_tsm_archlog}}"
+
+### Create a runfile to create tsm-administrator
+    - name: "# --- 21 - Render jinja-file create-tsm-administrator.macro.j2"
+      template: 
+        owner: "{{ tsm_instance_and_username }}"
+        group: "{{ tsm_user_groupid }}"
+        src: "{{ file_create_admin_jinja }}"
+        dest: "/home/{{ tsm_instance_and_username }}/create-tsm-administrator.macro"
+        force: yes
+
+
+# Create TSM-Administrator and grant system rights
+    - name: "# --- 22 - Create TSM-Administrator and grant system rights"
+      become: yes
+      become_user: "{{ tsm_instance_and_username }}"
+      become_method: su
+      shell: "source /home/{{tsm_instance_and_username}}/sqllib/db2profile && cd /home/{{ tsm_instance_and_username }} && dsmserv runfile create-tsm-administrator.macro"
+
+# Install the BA-Client
+    - name: "# --- 23 - Install the BA-Client"
+      shell: "{{ item }}"
+      ignore_errors: yes
+      #shell: "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }} && rpm --import GSKit.pub.pgp"
+      with_items: 
+        - "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }} && rpm --import GSKit.pub.pgp"
+        - "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }} && rpm --import RPM-GPG-KEY-ibmpkg"
+        #- "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }} && rpm -U gskcrypt64-8.0.55.14.linux.x86_64.rpm gskssl64-8.0.55.14.linux.x86_64.rpm"
+        #- "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }} && rpm -i TIVsm-API64.x86_64.rpm"
+        #- "cd {{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }} && rpm -i TIVsm-BA.x86_64.rpm"
+      tags:
+        - baclient
+
+    - name: "# --- 23 - Install the BA-Client with YUM"
+      become: "true"
+      become_user: "root"
+      yum:
+        name: 
+          - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }}gskcrypt64-8.0.55.14.linux.x86_64.rpm"
+          - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }}gskssl64-8.0.55.14.linux.x86_64.rpm"
+          - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }}TIVsm-API64.x86_64.rpm"
+          - "{{ dir_work }}{{ dir_tsm }}{{ dir_tsm_extracted_install }}{{ dir_tsm_client }}TIVsm-BA.x86_64.rpm"
+        state: "present"
+      register: result
+      tags:
+        - baclient
+     
+
+    - name: "# --- 24 - Render dsm.opt from jinja-template"
+      template: 
+        owner: "{{ tsm_instance_and_username }}"
+        group: "{{ tsm_user_groupid }}"
+        src: "{{ source_dsm_opt_j2 }}"
+        dest: "{{ file_dsm_opt }}"
+        force: yes
+      tags:
+        - baclient
+
+    - name: "# --- 25 - Render dsm.sys from jinja-template"
+      template: 
+        owner: "{{ tsm_instance_and_username }}"
+        group: "{{ tsm_user_groupid }}"
+        src: "{{ source_dsm_sys_j2 }}"
+        dest: "{{ file_dsm_sys }}"
+        force: yes
+      tags:
+        - baclient
+
+# Start TSM as background service
+    - name: "# --- 26 - Start TSM automatically in background"
+      become: yes
+      become_user: "{{ tsm_instance_and_username }}"
+      become_method: su
+      shell: "nohup {{ dir_default_installation_tsm }}rc.dsmserv -u {{ tsm_instance_and_username }} -i /home/{{ tsm_instance_and_username }} </dev/null &>/dev/null &"
+
+# Configure options to control when database reorganization runs
+
+
+# Start the server instance if it is not already started
+
+
+# Register your license
+
+
+# Prepare your system for database backups
+
+
+# Monitor the server
+

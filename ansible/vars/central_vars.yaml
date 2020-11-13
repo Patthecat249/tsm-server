@@ -1,17 +1,54 @@
 # TSM-Environment Variables
 tsm_server_name: "tsm-server"
-tsm_instance_name: "tsminst1"
-tsm_username: "tsminst1user"
+tsm_instance_and_username: "tsminst1"
+tsm_user_uid: "2222"
+tsm_user_groupid: "1111"
 dir_tsm_root_folder: "/tsm/"
-dir_tsm_actlog: "actlog/"
-dir_tsm_archlog: "archlog/"
+dir_tsm_actlog: "{{dir_tsm_root_folder}}actlog/"
+dir_tsm_archlog: "{{dir_tsm_root_folder}}archlog/"
+dir_tsm_instance: "{{dir_tsm_root_folder}}{{tsm_instance_and_username}}/"
+dir_tsm_db1: "{{dir_tsm_root_folder}}tsmdb001/"
+dir_tsm_db2: "{{dir_tsm_root_folder}}tsmdb002/"
+dir_tsm_db3: "{{dir_tsm_root_folder}}tsmdb003/"
+dir_tsm_db4: "{{dir_tsm_root_folder}}tsmdb004/"
+
 dir_default_installation_tsm: "/opt/tivoli/tsm/server/bin/"
 dir_default_installation_db2: "/opt/tivoli/tsm/db2/"
+file_tsm_unattended_xml: "tsm-unattended.xml"
+file_dsmserv_opt_jinja: "../config-files/dsmserv.opt.j2"
+file_create_admin_jinja: "../config-files/create-tsm-administrator.macro.j2"
 
-#Working Directories
+dsmadmc: "/opt/tivoli/tsm/server/bin/tsmdiag/dsmadmc"
+
+# TSM-Server admin
+tsm_admin_user: "admin"
+tsm_admin_pass: "Test1234"
+tsm_grant_class: "system"
+
+# DSMSERV-Options
+dsmserv_opt_commmethod: "tcpip"
+dsmserv_opt_tcpport: "1500"
+dsmserv_opt_ssltcpport: "1542"
+dsmserv_opt_tcpwindowssize: "63"
+dsmserv_opt_tcpnodelay: "yes"
+dsmserv_opt_maxsessions: "25"
+dsmserv_opt_txngroupmax: "4096"
+dsmserv_opt_language: "en_US"
+dsmserv_opt_volhist: "{{ dir_tsm_instance }}volhist.out"
+dsmserv_opt_devconfig: "{{ dir_tsm_instance }}devconfig.out"
+
+# Working Directories
 dir_work: "/opt/sva/"
 dir_tsm: "tsm/"
 dir_tsm_extracted_install: "install/"
+dir_tsm_client: "tsm-client/"
+dir_ba_client: "/opt/tivoli/tsm/client/ba/bin/"
+
+# TSM-Option-Files
+source_dsm_opt_j2: "../config-files/dsm.opt.j2"
+source_dsm_sys_j2: "../config-files/dsm.sys.j2"
+file_dsm_opt: "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
+file_dsm_sys: "/opt/tivoli/tsm/client/ba/bin/dsm.sys"
 
 # Mount-Folders
 mount_path_tsm: "/mnt/tsm/"
@@ -22,7 +59,9 @@ nfs_server_name: "nas.home.local"
 nfs_server_ip: "10.0.249.150"
 nfs_path: "/volume1/nfs-iso/"
 nfs_path_bin_file: "spectrumprotect/SP_8.1.10_LIN86_SERSTG_AGT_ML.bin"
+nfs_path_tsm_client_file: "spectrumprotect/8.1.10.0-TIV-TSMBAC-LinuxX86.tar"
 bin_file_name: "SP_8.1.10_LIN86_SERSTG_AGT_ML.bin"
+bin_file_tsm_client: "8.1.10.0-TIV-TSMBAC-LinuxX86.tar"
 
 
 
