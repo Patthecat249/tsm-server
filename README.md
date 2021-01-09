@@ -15,7 +15,7 @@ cd $mypath/git/pxe-server/playbooks/ && ansible-playbook 10_create_vm.yaml
 
 
 
-## Start PXE-Installation of the TSM-Server
+### Start PXE-Installation of the TSM-Server
 
 - Start VM in vCenter
 - Open web-console of VM
@@ -24,15 +24,25 @@ cd $mypath/git/pxe-server/playbooks/ && ansible-playbook 10_create_vm.yaml
 
 
 
-## Login to TSM-Server and Disable SELinux
+### Login to TSM-Server and Disable SELinux
 
 ```bash
-# ssh tsm-server
+# ssh root@tsm-server
 vi /etc/selinux/config
 #SELINUX=enforcing
 SELINUX=disabled
 :wq
 reboot
+```
+
+
+
+## Start TSM-Server Software installation/configuration-Playbook
+
+```bash
+ssh root@terraform
+mypath=$(pwd)
+cd $mypath/git/tsm-server/ansible/ && ansible-playbook playbooks/10_install_configure_a_tsm_server.yaml -k
 ```
 
 
