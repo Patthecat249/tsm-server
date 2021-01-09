@@ -2,7 +2,6 @@
 - name: "Install an IBM-Spectrum-Protect-Server"
   hosts: tsm
   gather_facts: false
-  ask_pass: "true"
   vars_files: 
     - "../vars/central_vars.yaml"
     - "../../credentials"
