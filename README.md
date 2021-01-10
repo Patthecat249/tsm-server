@@ -43,6 +43,25 @@ reboot
 ssh root@terraform
 mypath=$(pwd)
 cd $mypath/git/tsm-server/ansible/ && ansible-playbook playbooks/10_install_configure_a_tsm_server.yaml -k
+
+# This step need about 1 hour.
+```
+
+
+
+## Configure TSM specifics
+
+
+
+### Prepare Disk in Linux for Backups
+
+
+
+### Configure TSM:  Storage-Pools, Device-Class, Nodes
+
+```bash
+# 
+dsmadmc 
 ```
 
 
