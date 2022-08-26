@@ -1,6 +1,15 @@
 # Installation of a ISP-Server aka TSM-Server
 This repo contains the installation of a IBM Spectrum Protect-Server.
 ## Guide
+
+### Download Repo-PXE-Server
+# ssh into install-vm
+```bash
+mypath=$(pwd)
+mkdir git && cd git
+git clone https://github.com/Patthecat249/pxe-server.git
+```
+
 ### Prepare a kickstart.cfg-Configuration file for automated Installation
 
 ```bash
