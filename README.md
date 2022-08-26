@@ -51,9 +51,10 @@ reboot
 ## Start TSM-Server Software installation/configuration-Playbook
 
 ```bash
-ssh root@terraform
+ssh root@install-vm
 mypath=$(pwd)
-cd $mypath/git/tsm-server/ansible/ && ansible-playbook playbooks/10_install_configure_a_tsm_server.yaml -k
+ssh-copy-id tsm-server2
+cd $mypath/git/tsm-server/ansible/ && ansible-playbook playbooks/10_install_configure_a_tsm_server.yaml
 
 # This step need about 1 hour.
 ```
