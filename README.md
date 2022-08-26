@@ -16,6 +16,8 @@ git clone https://github.com/Patthecat249/pxe-server.git
 # login to terraform-host
 mypath=$(pwd)
 cd $mypath/git/pxe-server/playbooks/ && ansible-playbook 10_create_vm.yaml
+# or try this
+cd $mypath/git/pxe-server/playbooks && ansible-playbook 11_create_vm_from_clone.yaml -e "hostname=tsm-server cpu=8 ram=16384"
 
 # Enter the Name of the "tsm"-Server
 ```
